@@ -23,6 +23,17 @@ void button_init(){
 	}
 }
 
+int i = 0;
+
+typedef enum mode {
+	BLINK,
+	SNAKE,
+
+	BLINK_ENUM_LEN,
+} mode_t;
+
+mode_t blink_mode = SNAKE;
+
 int main(){
 	// Configure LED Matrix
 	for(int i = 17; i <= 20; i++){
@@ -35,7 +46,47 @@ int main(){
 	button_init();
 	
 	int sleep = 0;
+	int leds[4] = {17, 18, 20, 19};
 	while(1){
+		int led;
+		switch (blink_mode) {
+			case BLINK:
+				if (i++ % 2 == 0) {
+					for(int i = 17; i <= 20; i++){
+						GPIO->OUT &= ~(1 << i);
+					}
+				} else {
+					for(int i = 17; i <= 20; i++){
+						GPIO->OUT |= (1 << i);
+					}
+				}
+				break;
+
+			case SNAKE:
+				led = leds[i++ % 4];
+				for( int i = 17; i <= 20; i++){
+					if (i == led) GPIO->OUT &= ~(1 << i);
+					else GPIO->OUT |= (1 << i);
+				}
+				break;
+			default:
+				break;
+		}
+
+		// if (i % 100 == 0) blink_mode = ((blink_mode ++) % BLINK_ENUM_LEN);
+		if (i % 16 == 0) {
+			switch (blink_mode) {
+				case BLINK:
+					blink_mode = SNAKE;
+					break;
+				case SNAKE:
+					blink_mode = BLINK;
+					break;
+				default:
+					blink_mode = SNAKE;
+					break;
+			}
+		}
 
 		/* Check if button 1 is pressed;
 		 * turn on LED matrix if it is. */
@@ -53,7 +104,7 @@ int main(){
 			}
 		}
 
-		sleep = 10000;
+		sleep = 500000;
 		while(--sleep); // Delay
 	}
 	return 0;

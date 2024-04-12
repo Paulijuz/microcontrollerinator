@@ -18,7 +18,7 @@ void uart_init() {
 
 void uart_send(char letter) {
     UART->TASKS_STARTTX = 1;
-
+    
     UART->TXD = letter;
         
     while(!UART->EVENTS_TXDRDY) {}
